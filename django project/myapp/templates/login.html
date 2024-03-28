@@ -1,4 +1,3 @@
-
 {% extends 'header.html'%}
 {% block content%}
 <!DOCTYPE html>
@@ -7,9 +6,45 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title></title>
+	<style type="text/css">
+		span{
+			color: red;
+		}
+	</style>
+	
 </head>
 <body>
-<h1>welcome to my login page</h1>
+
+<center>
+<h1>welcome to login</h1>
+{% if msg %}
+ <b style="color:blue;">{{msg}}</b>
+ {% endif %}
+<form name="signup" method="post" action="{% url 'login' %}">
+	{% csrf_token %}
+	<table>
+		
+		<tr>
+			<td>email</td>
+			<td><input type="text" name="email" >
+				<td><span id="email"></span></td>
+		</tr>
+		
+		<tr>
+			<td>Password</td>
+			<td><input type="password" name="password" onblur="">
+				<td><span id="password"></span></td>
+		</tr>
+		
+		<tr><td>
+			<input type="submit" value="login" class="btn btn-primary">
+			</td>
+			<td><a href="{% url 'forgot-password' %}">forgot password</td>
+		</tr>
+	</table>
+	
+	
+</form></center>
 </body>
 </html>
 {% endblock %}
