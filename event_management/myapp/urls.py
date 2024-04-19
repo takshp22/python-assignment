@@ -13,5 +13,13 @@ urlpatterns = [
     path('change-password/',views.change_password,name='change-password'),
     path('forgot-password/',views.forgot_password,name='forgot-password'),
     path('verify-otp/',views.verify_otp,name='verify-otp'),
-    path('new-password/',views.new_password,name='new-password')
+    path('new-password/',views.new_password,name='new-password'),
+    path('profile/',views.profile,name='profile'),
+    path('manager-add-event/',views.manager_add_event,name='manager-add-event'),
+    path('manager-view-event/',views.manager_view_event,name='manager-view-event'),
+    path('manager-edit-event/<int:pk>/',views.manager_edit_event,name='manager-edit-event'),
+    path('manager-delete-event/<int:pk>/',views.manager_delete_event,name='manager-delete-event'),
+   path('event-details/<int:pk>/',views.event_details,name='event-details'),
+   path('book-event/<int:pk>/',views.book_event,name='book-event'),
+   path('myevents/',views.myevents,name='myevents'),
 ]

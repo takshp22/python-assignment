@@ -1,10 +1,17 @@
-from django.shortcuts import render
-from .models import User
+from django.shortcuts import render,redirect
+from .models import User,Event,BookEvent
 import requests
 import random
 # Create your views here.
 def index(request):
-	return render(request,'index.html')
+	try:
+		user=User.objects.get(email=request.session['email'])
+		if user.usertype=="user":
+			return render(request,'index.html')
+		else:
+			return render(request,'manager-index.html')
+	except:
+		return render(request,'index.html')
 
 def about(request):
 	return render(request,'about.html')
@@ -13,7 +20,8 @@ def speaker(request):
 	return render(request,'speaker.html')
 
 def schedule(request):
-	return render(request,'schedule.html')
+	events=Event.objects.all()
+	return render(request,'schedule.html',{'events':events})
 
 def blog(request):
 	return render(request,'blog.html')
@@ -27,7 +35,7 @@ def signup(request):
 			User.objects.get(email=request.POST['email'])
 			msg="Email Already Registered"
 			return render(request,'login.html',{'msg':msg})
-		except:
+		except :
 			if request.POST['password']==request.POST['cpassword']:
 				User.objects.create(
 					fname=request.POST['fname'],
@@ -36,6 +44,8 @@ def signup(request):
 					mobile=request.POST['mobile'],
 					address=request.POST['address'],
 					password=request.POST['password'],
+					profile_picture=request.FILES['profile_picture'],
+					usertype=request.POST['usertype'],
 					)
 				msg="User sign up Successfully"
 				return render(request,'login.html',{'msg':msg})
@@ -52,7 +62,12 @@ def login(request):
 			if user.password==request.POST['password']:
 				request.session['email']=user.email
 				request.session['fname']=user.fname
+				request.session['profile_picture']=user.profile_picture.url
 				return render(request,'index.html')
+				if user.usertype=="user":
+					return render(request,'index.html')
+				else:
+					return render(request,'manager-index.html')
 			else:
 				msg="Incorrect Password"
 				return render(request,'login.html',{'msg':msg})
@@ -137,3 +152,105 @@ def new_password(request):
 	else:
 		msg="new password & confirm new password does not matched"
 		return render(request,'new-password.html',{'mobile':mobile,'msg':msg})
+
+def profile(request):
+	user=User.objects.get(email=request.session['email'])
+	if request.method=="POST":
+		user.fname=request.POST['fname']
+		user.lname=request.POST['lname']
+		user.mobile=request.POST['mobile']
+		user.address=request.POST['address']
+		try:
+			user.profile_picture=request.FILES['profile_picture']
+		except:
+			pass
+		user.save()
+		request.session['profile_picture']=user.profile_picture.url
+		msg="Profile Updated Successfully"
+		if user.usertype=="user":
+			return render(request,'profile.html',{'user':user,'msg':msg})
+		else:
+			return render(request,'manager-profile.html',{'user':user})
+	else:
+		if user.usertype=="user":
+			return render(request,'profile.html',{'user':user})
+		else:
+			return render(request,'manager-profile.html',{'user':user})
+
+
+def manager_add_event(request):
+	if request.method=="POST":
+		manager=User.objects.get(email=request.session['email'])
+		Event.objects.create(
+			manager=manager,
+			event_name=request.POST['event_name'],
+			event_date=request.POST['event_date'],
+			event_time=request.POST['event_time'],
+			event_venue=request.POST['event_venue'],
+			event_picture=request.FILES['event_picture'],
+			event_price=request.POST['event_price']
+			)
+		msg="Event added successfully"
+		return render(request,'manager-add-event.html',{'msg':msg})
+	else:
+		return render(request,'manager-add-event.html')
+
+
+def manager_view_event(request):
+	manager=User.objects.get(email=request.session['email'])
+	events=Event.objects.filter(manager=manager)
+	return render(request,'manager_view_event.html',{'events':events})
+
+
+def manager_edit_event(request,pk):
+	event=Event.objects.get(pk=pk)
+	if request.method=="POST":
+		event.event_name=request.POST['event_name']
+		event.event_date=request.POST['event_date']
+		event.event_time=request.POST['event_time']
+		event.event_venue=request.POST['event_venue']
+		event.event_price=request.POST['event_price']
+		try:
+			event.event_picture=request.FILES['event_picture']
+		except:
+			pass
+		event.save()
+		msg="event Updated Successfully"
+		return render(request,'manager-edit-event.html',{'event':event,'msg':msg})
+	else:
+		return render(request,'manager-edit-event.html',{'event':event})
+
+
+def manager_delete_event(request,pk):
+	event=Event.objects.get(pk=pk)
+	event.delete()
+	return redirect('manager-view-event')
+
+
+def event_details(request,pk):
+	event=Event.objects.get(pk=pk)
+	return render(request,'event_details.html',{'event':event})
+
+
+def book_event(request,pk):
+	event=Event.objects.get(pk=pk)
+	user=User.objects.get(email=request.session['email'])
+	if request.method=="POST":
+		BookEvent.objects.create(
+			user=user,
+			event=event,
+			event_price=event.event_price,
+			ticket_qty=int(request.POST['ticket_qty']),
+			total_price=event.event_price*int(request.POST['event_price']),
+			)
+		msg="event booked successfully"
+		events=BookEvent.objects.filter(user=user)
+		return render(request,'myevents.html',{'events':events,'msg':msg})
+	else:
+		return render(request,'book-event.html',{'event':event,'user':user})
+
+
+def myevents(request):
+	user=User.objects.get(email=request.session['email'])
+	events=BookEvent.objects.filter(user=user)
+	return render(request,'myevents.html',{'events':events})
