@@ -2,6 +2,55 @@ from django.shortcuts import render,redirect
 from .models import User,Event,BookEvent
 import requests
 import random
+from django.http import JsonResponse,HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+import stripe
+from django.conf import settings
+
+stripe.api_key = settings.STRIPE_PRIVATE_KEY
+YOUR_DOMAIN = 'http://localhost:8000'
+
+
+@csrf_exempt
+def create_checkout_session(request):
+	user=User.objects.get(email=request.session['email'])
+	#amount = int(json.load(request)['post_data'])
+	#be=int(json.load(request)['post_data1'])
+	#print(be)
+	data=json.load(request)
+	amount=int(data['post_data'])
+	be=int(data['post_data1'])
+	bookevent=BookEvent.objects.get(pk=be)
+	bookevent.payment_status=True
+	bookevent.save()
+	print(bookevent.user.fname)
+	final_amount=amount*100
+	
+	session = stripe.checkout.Session.create(
+		payment_method_types=['card'],
+		line_items=[{
+			'price_data': {
+				'currency': 'inr',
+				'product_data': {
+					'name': 'Checkout Session Data',
+					},
+				'unit_amount': final_amount,
+				},
+			'quantity': 1,
+			}],
+		mode='payment',
+		success_url=YOUR_DOMAIN + '/success.html',
+		cancel_url=YOUR_DOMAIN + '/cancel.html',)
+	print(session.id)
+	return JsonResponse({'id': session.id})
+
+def success(request):
+	return render(request,'success.html')
+
+def cancel(request):
+	return render(request,'cancel.html')
+
 # Create your views here.
 def index(request):
 	try:
@@ -254,3 +303,11 @@ def myevents(request):
 	user=User.objects.get(email=request.session['email'])
 	events=BookEvent.objects.filter(user=user)
 	return render(request,'myevents.html',{'events':events})
+
+
+def payment(request,pk):
+	bookevent=BookEvent.objects.get(pk=pk)
+	total_price=bookevent.total_price
+	be=bookevent.pk
+	print("BE : ",be)
+	return render(request,'payment.html',{'bookevent':bookevent,'total_price':total_price,'be':be})

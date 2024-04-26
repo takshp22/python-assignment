@@ -117,6 +117,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'static'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -126,3 +127,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+
+STRIPE_PUBLIC_KEY='pk_test_51P7BaRSA4A3L7l1djuMFS8ub9fOmg3oednobRSFfAg8jDcxMCej6YTXbQrPF1ArwAreFJuuRDrL9WoNGTLVAr9Zv00VczF9gPl'
+STRIPE_PRIVATE_KEY='sk_test_51P7BaRSA4A3L7l1d4tunVwbpoMmGEGXD9PvttLoNTBWPx7Z581A7rwvYdKvZHVaCJbOpm21yI7iY8mMNamIpWjjW00LqOQfTsN'

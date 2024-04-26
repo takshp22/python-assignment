@@ -160,7 +160,7 @@
                                                     
                                                     <div>
                                                         {% if i.payment_status == False %}
-                                                       <button type="submit" class="site-btn"><a href="">proceed for payment</a></button>
+                                                       <button type="submit" class="site-btn"><a href="{% url 'payment' pk=i.pk %}">proceed for payment</a></button>
                                                             {% else %}
                                                          <button type="submit" class="site-btn"><a href="" disabled>Already Booked</a></button>
                                                          <br><br>
